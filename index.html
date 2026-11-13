@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A browser-based Blowfish encryption and decryption educational demonstration.">
+  <title>Blowfish Encryption &amp; Decryption</title>
+  <style>
+    :root {
+      --navy: #071629;
+      --navy2: #102b49;
+      --blue: #1769d2;
+      --teal: #0d9488;
+      --ink: #172b45;
+      --muted: #64748b;
+      --line: #dce5ef;
+      --soft: #f3f7fb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(135deg, var(--navy), var(--navy2));
+      min-height: 100vh;
+      padding: 34px 16px 48px;
+    }
+    .page { width: min(920px, 100%); margin: 0 auto; }
+    header { text-align: center; color: white; margin: 10px 0 26px; }
+    .eyebrow {
+      display: inline-block; padding: 7px 12px; border: 1px solid #45617e;
+      border-radius: 999px; color: #b9d8f5; font-size: 12px;
+      letter-spacing: 1.4px; text-transform: uppercase;
+    }
+    h1 { margin: 15px 0 8px; font-size: clamp(27px, 5vw, 40px); }
+    header p { color: #c5d4e4; margin: 0; font-size: 16px; }
+    .card {
+      background: white; border-radius: 18px; padding: clamp(20px, 4vw, 34px);
+      box-shadow: 0 18px 55px #0005;
+    }
+    .card h2 { margin: 0 0 7px; font-size: 21px; }
+    .intro { color: var(--muted); margin: 0 0 24px; line-height: 1.55; }
+    label { display: block; font-weight: 700; margin: 17px 0 8px; font-size: 14px; }
+    textarea, input {
+      display: block; width: 100%; border: 1px solid var(--line); border-radius: 10px;
+      padding: 13px 14px; font: inherit; color: var(--ink); background: #fbfdff;
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    textarea { min-height: 125px; resize: vertical; line-height: 1.5; }
+    textarea:focus, input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #1769d21c; }
+    .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; line-height: 1.45; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+    button {
+      border: 0; border-radius: 9px; padding: 12px 17px; color: white;
+      font-weight: 700; font-size: 14px; cursor: pointer;
+    }
+    button:focus-visible { outline: 3px solid #7dd3fc; outline-offset: 2px; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .primary { background: var(--blue); }
+    .primary:hover { background: #1258b5; }
+    .teal { background: var(--teal); }
+    .teal:hover { background: #0b7c73; }
+    .dark { background: #334155; }
+    .dark:hover { background: #1e293b; }
+    .output-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .output-head label { margin-bottom: 8px; }
+    .status {
+      display: none; padding: 11px 13px; border-radius: 9px; margin-top: 16px;
+      font-size: 13px; line-height: 1.45;
+    }
+    .status.show { display: block; }
+    .status.ok { color: #116149; background: #e8f8f1; border: 1px solid #b9ead7; }
+    .status.error { color: #9f2525; background: #fff0f0; border: 1px solid #ffd0d0; }
+    .status.info { color: #174b83; background: #edf6ff; border: 1px solid #c9e2ff; }
+    .divider { border: 0; border-top: 1px solid var(--line); margin: 27px 0 6px; }
+    .education { margin-top: 25px; }
+    .education h2 { color: white; font-size: 23px; margin: 0 0 14px; }
+    .edu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; }
+    .edu-item {
+      background: #102b49; border: 1px solid #294968; border-radius: 12px;
+      padding: 17px; color: #dce9f5;
+    }
+    .edu-item h3 { color: #7dd3fc; margin: 0 0 8px; font-size: 15px; }
+    .edu-item p { margin: 0; font-size: 13px; line-height: 1.6; }
+    .note {
+      margin-top: 14px; background: #fff7df; color: #704d09; border-radius: 10px;
+      padding: 13px 15px; font-size: 13px; line-height: 1.55;
+    }
+    footer { text-align: center; color: #a9bbce; font-size: 12px; margin-top: 22px; }
+    @media (max-width: 620px) {
+      body { padding: 22px 12px 35px; }
+      .edu-grid { grid-template-columns: 1fr; }
+      .actions button { flex: 1 1 145px; }
+      .output-head { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <span class="eyebrow">Information Security · Cryptography Virtual Lab</span>
+      <h1>Blowfish Encryption &amp; Decryption</h1>
+      <p>A Symmetric Key Cryptography Demonstration</p>
+    </header>
+
+    <section class="card" aria-labelledby="app-heading">
+      <h2 id="app-heading">Encryption / Decryption Tool</h2>
+      <p class="intro">Enter a message and a secret key. Use the same key to decrypt the generated ciphertext.</p>
+
+      <label for="message">Original Message / Ciphertext</label>
+      <textarea id="message" placeholder="Type your message here, or paste Base64 ciphertext to decrypt..."></textarea>
+
+      <label for="secret">Secret Key (4 to 56 UTF-8 bytes)</label>
+      <input id="secret" type="password" autocomplete="off" placeholder="Enter your secret key">
+      <p class="hint">The same secret key is required for both encryption and decryption.</p>
+
+      <div class="actions">
+        <button class="primary" id="encryptBtn" type="button">Encrypt Message</button>
+        <button class="teal" id="decryptBtn" type="button">Decrypt Message</button>
+      </div>
+
+      <hr class="divider">
+
+      <div class="output-head">
+        <label for="output">Output</label>
+      </div>
+      <textarea id="output" placeholder="Encrypted or decrypted result will appear here..." readonly></textarea>
+      <div class="actions">
+        <button class="dark" id="copyBtn" type="button">Copy Output</button>
+        <button class="teal" id="useBtn" type="button">Use Output as Input</button>
+        <button class="dark" id="clearBtn" type="button">Clear</button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="education">
+      <h2>Learn About Blowfish</h2>
+      <div class="edu-grid">
+        <article class="edu-item">
+          <h3>What is Cryptography?</h3>
+          <p>Cryptography is the technique of protecting information by converting readable data (plaintext) into an unreadable form (ciphertext). Only someone with the correct key should be able to recover the original message.</p>
+        </article>
+        <article class="edu-item">
+          <h3>What is Blowfish?</h3>
+          <p>Blowfish is a symmetric-key block cipher designed by Bruce Schneier. It processes data in 64-bit (8-byte) blocks and supports variable-length keys from 32 to 448 bits.</p>
+        </article>
+        <article class="edu-item">
+          <h3>Symmetric-Key Encryption</h3>
+          <p>Symmetric encryption uses one shared secret key for both operations. The sender encrypts with the key, and the receiver uses the same key to decrypt.</p>
+        </article>
+        <article class="edu-item">
+          <h3>How Encryption Works</h3>
+          <p>The application creates a fresh random 8-byte initialization vector (IV), adds a validation marker to the message, and encrypts it using Blowfish in CBC mode with PKCS5 padding. The IV is placed before the ciphertext, and the combined bytes are displayed as Base64.</p>
+        </article>
+        <article class="edu-item">
+          <h3>How Decryption Works</h3>
+          <p>The Base64 text is decoded. The first 8 bytes are extracted as the IV and the remaining bytes as ciphertext. Blowfish CBC decrypts the data with the same key, removes the padding, and checks the validation marker before showing the original message.</p>
+        </article>
+        <article class="edu-item">
+          <h3>Advantages and Limitations</h3>
+          <p>Blowfish is fast, freely available, and supports variable-length keys. However, its 64-bit block size is small by modern standards. It is a legacy algorithm and is not recommended for protecting new sensitive applications.</p>
+        </article>
+      </div>
+      <div class="note">
+        <strong>Educational note:</strong> This page demonstrates the Blowfish algorithm using CBC mode. CBC encryption by itself does not authenticate ciphertext; the validation marker is only a basic wrong-key / corruption check, not a modern message-authentication mechanism. Do not use this demonstration to protect real sensitive information.
+      </div>
+    </section>
+    <footer>Blowfish Cryptography Virtual Lab · HTML5 · CSS3 · JavaScript</footer>
+  </main>
+
+  <script type="module">
+    
+    import { Blowfish } from "https://cdn.jsdelivr.net/npm/egoroof-blowfish@4.0.3/+esm";
+
+    const messageEl = document.getElementById("message");
+    const keyEl = document.getElementById("secret");
+    const outputEl = document.getElementById("output");
+    const statusEl = document.getElementById("status");
+    const encryptBtn = document.getElementById("encryptBtn");
+    const decryptBtn = document.getElementById("decryptBtn");
+
+    const MARKER = "BLOWFISH-DEMO-V1|";
+    const BLOCK_BYTES = 8;
+
+    function showStatus(message, type = "info") {
+      statusEl.textContent = message;
+      statusEl.className = `status show ${type}`;
+    }
+
+    function hideStatus() {
+      statusEl.textContent = "";
+      statusEl.className = "status";
+    }
+
+    function validateInputs() {
+      const message = messageEl.value;
+      const key = keyEl.value;
+      if (!message.trim()) throw new Error("Please enter a message or ciphertext.");
+      if (!key) throw new Error("Please enter the secret key.");
+      const keyLength = new TextEncoder().encode(key).length;
+      if (keyLength < 4 || keyLength > 56) {
+        throw new Error("The Blowfish key must be between 4 and 56 UTF-8 bytes (32 to 448 bits).");
+      }
+      return { message, key };
+    }
+
+    function bytesToBase64(bytes) {
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 0x8000) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      }
+      return btoa(binary);
+    }
+
+    function base64ToBytes(base64) {
+      const clean = base64.replace(/\s/g, "");
+      if (!clean || !/^[A-Za-z0-9+/]*={0,2}$/.test(clean) || clean.length % 4 !== 0) {
+        throw new Error("Invalid encrypted data. Expected valid Base64 ciphertext.");
+      }
+      let binary;
+      try {
+        binary = atob(clean);
+      } catch {
+        throw new Error("Invalid encrypted data. The Base64 text could not be decoded.");
+      }
+      return Uint8Array.from(binary, char => char.charCodeAt(0));
+    }
+
+    encryptBtn.addEventListener("click", () => {
+      hideStatus();
+      outputEl.value = "";
+      try {
+        const { message, key } = validateInputs();
+
+        
+        const iv = crypto.getRandomValues(new Uint8Array(BLOCK_BYTES));
+
+        
+        const plainText = MARKER + message;
+
+        
+        const cipher = new Blowfish(key, Blowfish.MODE.CBC, Blowfish.PADDING.PKCS5);
+        cipher.setIv(iv);
+
+        
+        const encryptedBytes = cipher.encode(plainText);
+
+       
+        const combined = new Uint8Array(iv.length + encryptedBytes.length);
+        combined.set(iv, 0);
+        combined.set(encryptedBytes, iv.length);
+        outputEl.value = bytesToBase64(combined);
+        showStatus("Message encrypted successfully using Blowfish CBC.", "ok");
+      } catch (error) {
+        showStatus(error.message || "Encryption failed. Please check your input and key.", "error");
+      }
+    });
+
+    decryptBtn.addEventListener("click", () => {
+      hideStatus();
+      outputEl.value = "";
+      try {
+        const { message: encoded, key } = validateInputs();
+
+        const combined = base64ToBytes(encoded);
+        if (combined.length <= BLOCK_BYTES ||
+            (combined.length - BLOCK_BYTES) % BLOCK_BYTES !== 0) {
+          throw new Error("Incorrect encrypted data: expected an 8-byte IV followed by Blowfish ciphertext blocks.");
+        }
+
+        
+        const iv = combined.slice(0, BLOCK_BYTES);
+        const encryptedBytes = combined.slice(BLOCK_BYTES);
+
+        const cipher = new Blowfish(key, Blowfish.MODE.CBC, Blowfish.PADDING.PKCS5);
+        cipher.setIv(iv);
+        const decodedText = cipher.decode(encryptedBytes, Blowfish.TYPE.STRING);
+
+        
+        if (!decodedText.startsWith(MARKER)) {
+          throw new Error("Decryption failed. The secret key may be incorrect or the ciphertext may be damaged.");
+        }
+
+        
+        outputEl.value = decodedText.slice(MARKER.length);
+        showStatus("Message decrypted successfully. Original message recovered.", "ok");
+      } catch (error) {
+        showStatus(error.message || "Decryption failed. Check the ciphertext and secret key.", "error");
+      }
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", async () => {
+      if (!outputEl.value) {
+        showStatus("There is no output to copy.", "error");
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(outputEl.value);
+        showStatus("Output copied to clipboard.", "ok");
+      } catch {
+        outputEl.focus();
+        outputEl.select();
+        showStatus("Clipboard access was blocked. Select the output and copy it manually (Ctrl+C).", "info");
+      }
+    });
+
+    document.getElementById("useBtn").addEventListener("click", () => {
+      if (!outputEl.value) {
+        showStatus("There is no output to move into the input field.", "error");
+        return;
+      }
+      messageEl.value = outputEl.value;
+      showStatus("Output moved into the input field. Enter the same key and click Decrypt Message.", "info");
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      messageEl.value = "";
+      keyEl.value = "";
+      outputEl.value = "";
+      hideStatus();
+      messageEl.focus();
+    });
+
+    window.addEventListener("error", event => {
+      if (event.message) showStatus("A script error occurred. Check your internet connection and reload the page.", "error");
+    });
+  </script>
+</body>
+</html>
